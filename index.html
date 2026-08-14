@@ -6,12 +6,16 @@
 </head>
 <body>
   <button id="start">Start</button>
-  <button id="stop">Stop</button>
-  <p id="status">Idle</p>
+  <button id="stop" disabled>Stop</button>
+
+  <p id="status">
+    <span id="dot" style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#999; margin-right:6px; vertical-align:middle;"></span>
+    <span id="statusText">Idle</span>
+  </p>
 
   <h3>Transcript:</h3>
   <p id="output" style="min-height: 1.5em; padding: 8px; border: 1px solid #ccc;"></p>
 
-  <script src="script.js"></script>
+  <script src="/main.js"></script>
 </body>
 </html>

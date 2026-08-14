@@ -1,20 +1,27 @@
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+const statusText = document.getElementById('statusText');
+const dot = document.getElementById('dot');
+const output = document.getElementById('output');
+const startBtn = document.getElementById('start');
+const stopBtn = document.getElementById('stop');
+
 if (!SpeechRecognition) {
-  document.getElementById('status').textContent =
+  statusText.textContent =
     'This browser does not support the Web Speech API. Use Chrome or Edge.';
 } else {
   const recognition = new SpeechRecognition();
-  recognition.continuous = true;      // keep listening until stopped
-  recognition.interimResults = false; // only final results
-  recognition.lang = 'en-US';         // change if needed, e.g. 'de-DE'
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = 'en-US';
 
-  const status = document.getElementById('status');
-  const output = document.getElementById('output');
   let transcript = '';
 
   recognition.onstart = () => {
-    status.textContent = 'Listening...';
+    statusText.textContent = 'Listening... (speak now)';
+    dot.style.background = '#e53935';
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
   };
 
   recognition.onresult = (event) => {
@@ -22,27 +29,45 @@ if (!SpeechRecognition) {
     for (const result of event.results) {
       transcript += result[0].transcript;
     }
-    output.textContent = transcript;   // update the page as speech comes in
+    output.textContent = transcript;
   };
 
   recognition.onerror = (event) => {
     console.log('SPEECH ERROR:', event.error);
-    status.textContent = 'Error: ' + event.error;
+    statusText.textContent = 'Error: ' + event.error;
+    dot.style.background = '#999';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
   };
 
   recognition.onend = () => {
     console.log('TRANSCRIPT:', JSON.stringify(transcript));
-    status.textContent = 'Stopped. Heard: ' + (transcript || '(nothing)');
+    // don't overwrite an error message
+    if (!statusText.textContent.startsWith('Error')) {
+      statusText.textContent = 'Stopped. Heard: ' + (transcript || '(nothing)');
+    }
+    dot.style.background = '#999';
     output.textContent = transcript || '(nothing heard)';
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
   };
 
-  document.getElementById('start').onclick = () => {
+  startBtn.onclick = () => {
     transcript = '';
     output.textContent = '';
-    recognition.start();
+    statusText.textContent = 'Starting... (waiting for mic)';  // immediate feedback
+    dot.style.background = '#fb8c00';                           // orange = pending
+    console.log('Start clicked');
+    try {
+      recognition.start();
+    } catch (e) {
+      console.log('start() threw:', e.message);
+      statusText.textContent = 'start() failed: ' + e.message;
+      dot.style.background = '#999';
+    }
   };
 
-  document.getElementById('stop').onclick = () => {
-    recognition.stop();   // triggers onend, which logs the result
+  stopBtn.onclick = () => {
+    recognition.stop();
   };
 }

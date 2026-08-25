@@ -1,0 +1,17 @@
+body {
+    background: #11142b;
+}
+
+p {
+    font-family: monospace;
+    color: aliceblue;
+}
+
+.data_text {
+    color: rgb(120, 127, 134);
+}
+
+.weather-icon {
+  display: inline-block;
+  width: 10em;
+}

@@ -36,8 +36,10 @@ async function pullWeather(date_string, lat, lon) {
     var next_time_cloud_cover_under_40 = -1
 
     
-
+    //determine the index of the next time that the cloud cover ist less than p
+    //then determine if that timeframe is between sunrise and sunset
     for(let i = time_index; i < array_of_cloud_covers.length; i++){
+
       if (array_of_cloud_covers[i] < 30) {
 
         const just_date = result.hourly.time[i].slice(0, 10)
@@ -56,14 +58,8 @@ async function pullWeather(date_string, lat, lon) {
           next_time_cloud_cover_under_40 = result.hourly.time[i].slice(11, 16) + " " + result.hourly.time[i].slice(8, 10) + "." + result.hourly.time[i].slice(5, 7) + "." + result.hourly.time[i].slice(0, 4);
           break
         }
-        
-        
       }
     }
-
-    
-
-
 
 
     document.getElementById("weather_now").innerHTML = `
@@ -147,6 +143,17 @@ function update_location(highAcc){
 
 async function main(){
 
+
+  const throbber_string = "⣷⣯⣟⡿⢿⣻⣽⣾";
+  const throbber = document.getElementById("throbber")
+  var i = 0;
+  setInterval(() => {
+    throbber.innerHTML = "Requesting Location "+throbber_string[i]
+    i = (i + 1) % throbber_string.length;
+  }, 100)
+
+  
+
   //Default Berlin
   var latitude = 52.52;
   var longitude = 13.41;
@@ -155,6 +162,8 @@ async function main(){
     [latitude, longitude] = await update_location(false);
   } catch(err) {
     console.log("using berlin as location", err.message);
+  } finally {
+    throbber.hidden = true
   }
 
   latitude.toFixed(2);

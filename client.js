@@ -101,7 +101,7 @@ async function pullWeather(date_string, lat, lon) {
       <div>╰╴<span class="weather-icon">next sun</span><span class="data_text">${next_time_DNI_over_120}</span></div>
     `;
 
-    document.getElementById("weather_next").innerHTML ="🛈 A DNI over 120 constitutes as 'sunny'";
+    document.getElementById("info").innerHTML ="(!) A DNI over 120 constitutes as 'sunny'";
 
 
   } catch (error) {

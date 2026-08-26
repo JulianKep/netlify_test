@@ -1,6 +1,6 @@
 async function pullWeather(date_string, lat, lon) {
 /*   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,cloud_cover&forecast_days=16`; */
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunset,sunrise,moon_phase,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,apparent_temperature,precipitation_probability,cloud_cover,uv_index&current=temperature_2m,apparent_temperature,cloud_cover,precipitation&timezone=auto&forecast_days=16`
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=uv_index_max,sunset,sunrise,moon_phase,temperature_2m_max,temperature_2m_min&hourly=direct_normal_irradiance,temperature_2m,apparent_temperature,precipitation_probability,cloud_cover,uv_index&current=uv_index,temperature_2m,apparent_temperature,direct_normal_irradiance,cloud_cover,precipitation&timezone=auto&forecast_days=16`
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -19,28 +19,35 @@ async function pullWeather(date_string, lat, lon) {
 
     console.debug(time_index);
 
+    //now variables
     const time_now = result.current.time.slice(11, 16) + " " + result.current.time.slice(8, 10) + "." + result.current.time.slice(5, 7) + "." + result.current.time.slice(0, 4)
     const temp_now = result.current.temperature_2m + " C°"
     const temp_felt_now = result.current.apparent_temperature + " C°"
-    const cloud_cover_now = result.current.cloud_cover + " %"
-    const uv_index_now = result.hourly.uv_index[time_index] 
+    const direct_normal_irradiance = result.current.direct_normal_irradiance + " W/m²"
+    const uv_index_now = result.current.uv_index
 
+    //today variables
     const max_temp_today = result.daily.temperature_2m_max[0] + " C°"
     const min_temp_today = result.daily.temperature_2m_min[0] + " C°"
     const sunset_today = result.daily.sunset[0].slice(11, 16)
-    const max_uv_index_today = 0
     const moon_phase_today = result.daily.moon_phase[0]
 
 
-    const array_of_cloud_covers = result.hourly.cloud_cover
-    var next_time_cloud_cover_under_40 = -1
+    //tomorrow variables
+    const max_temp_tomorrow = result.daily.temperature_2m_max[1] + " C°"
+    const max_uv_index_tomorrow = result.daily.uv_index_max[1]
+
+
+    //future variables
+    const array_of_DNIs = result.hourly.direct_normal_irradiance
+    var next_time_DNI_over_120 = -1
 
     
-    //determine the index of the next time that the cloud cover ist less than p
-    //then determine if that timeframe is between sunrise and sunset
-    for(let i = time_index; i < array_of_cloud_covers.length; i++){
+      //determine the index of the next time that the cloud cover ist less than p
+      //then determine if that timeframe is between sunrise and sunset
+    for(let i = time_index; i < array_of_DNIs.length; i++){
 
-      if (array_of_cloud_covers[i] < 30) {
+      if (array_of_DNIs[i] > 120) {
 
         const just_date = result.hourly.time[i].slice(0, 10)
         let date_index;
@@ -55,11 +62,15 @@ async function pullWeather(date_string, lat, lon) {
         const time = new Date(result.hourly.time[i]);
 
         if (sunrise < time && time < sunset){
-          next_time_cloud_cover_under_40 = result.hourly.time[i].slice(11, 16) + " " + result.hourly.time[i].slice(8, 10) + "." + result.hourly.time[i].slice(5, 7) + "." + result.hourly.time[i].slice(0, 4);
+          next_time_DNI_over_120 = result.hourly.time[i].slice(11, 16) + " " + result.hourly.time[i].slice(8, 10) + "." + result.hourly.time[i].slice(5, 7) + "." + result.hourly.time[i].slice(0, 4);
           break
         }
       }
     }
+
+
+
+
 
 
     document.getElementById("weather_now").innerHTML = `
@@ -68,7 +79,7 @@ async function pullWeather(date_string, lat, lon) {
       <div>├╴<span class="weather-icon">temperature</span></span><span class="data_text">${temp_now}</span></div>
       <div>├╴<span class="weather-icon">percieved temp</span></span><span class="data_text">${temp_felt_now}</span></div>
       <div>├╴<span class="weather-icon">uv-index</span></span><span class="data_text">${uv_index_now}</span></div>
-      <div>╰╴<span class="weather-icon">cloud cover</span></span><span class="data_text">${cloud_cover_now}</div>
+      <div>╰╴<span class="weather-icon">DNI</span></span><span class="data_text">${direct_normal_irradiance}</div>
     `;
 
     document.getElementById("weather_today").innerHTML = `
@@ -79,10 +90,18 @@ async function pullWeather(date_string, lat, lon) {
       <div>╰╴<span class="weather-icon">moon phase</span><span class="data_text">${moon_phase_today}</span></div>
     `;
 
+    document.getElementById("weather_tomorrow").innerHTML = `
+      <div>Weather tomorrow:</div>
+      <div>├╴<span class="weather-icon">max temp</span><span class="data_text">${max_temp_tomorrow}</span></div>
+      <div>╰╴<span class="weather-icon">uv-index max</span><span class="data_text">${max_uv_index_tomorrow}</span></div>
+    `;
+
     document.getElementById("weather_next").innerHTML = `
       <div>Weather future:</div>
-      <div>╰╴<span class="weather-icon">next sun</span><span class="data_text">${next_time_cloud_cover_under_40}</span></div>
+      <div>╰╴<span class="weather-icon">next sun</span><span class="data_text">${next_time_DNI_over_120}</span></div>
     `;
+
+    document.getElementById("weather_next").innerHTML ="🛈 A DNI over 120 constitutes as 'sunny'";
 
 
   } catch (error) {

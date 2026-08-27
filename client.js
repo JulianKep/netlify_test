@@ -17,8 +17,6 @@ async function pullWeather(date_string, lat, lon) {
       }
     }
 
-    console.debug(time_index);
-
     //now variables
     const time_now = result.current.time.slice(11, 16) + " " + result.current.time.slice(8, 10) + "." + result.current.time.slice(5, 7) + "." + result.current.time.slice(0, 4)
     const temp_now = result.current.temperature_2m + " C°"
@@ -68,7 +66,29 @@ async function pullWeather(date_string, lat, lon) {
       }
     }
 
+    //determine days until fullmoon
+    var next_full_moon = "no full moon for 16d"
+    for(const [index, item] of result.daily.moon_phase.entries()){
+      if(0.4375 <= item && item < 0.5625){
+        if(index == 0){
+          next_full_moon = "full moon today"
+          break
+        } else {
+          next_full_moon = "full moon in " + index + " day(s)"
+        }
+      }
+    }
 
+
+    sessionStorage.setItem(
+      "dni",
+      JSON.stringify(result.hourly.direct_normal_irradiance)
+    );
+
+    sessionStorage.setItem(
+      "dni_labels",
+      JSON.stringify(result.hourly.time)
+    );
 
 
 
@@ -96,12 +116,16 @@ async function pullWeather(date_string, lat, lon) {
       <div>╰╴<span class="weather-icon">uv-index max</span><span class="data_text">${max_uv_index_tomorrow}</span></div>
     `;
 
+
+
     document.getElementById("weather_next").innerHTML = `
       <div>Weather future:</div>
+      <div>├╴<span class="weather-icon">next full moon</span><span class="data_text">${next_full_moon}</span></div>
       <div>╰╴<span class="weather-icon">next sun</span><span class="data_text">${next_time_DNI_over_120}</span></div>
     `;
 
-    document.getElementById("info").innerHTML ="(!) A DNI over 120 constitutes as 'sunny'";
+/*     document.getElementById("info").innerHTML ='(!) A DNI over 120 constitutes as "sunny"'; */
+    document.getElementById("buttons").innerHTML='<a href="/graphs.html" class="ascii_button">Graphs</a>'
 
 
   } catch (error) {
@@ -192,7 +216,7 @@ async function main(){
 
   pullWeather(date_string, latitude, longitude);
 
+  
 
 }
-
-main()
+main();

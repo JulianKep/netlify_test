@@ -94,7 +94,7 @@ async function pullWeather(date_string, lat, lon) {
 
 
     document.getElementById("weather_now").innerHTML = `
-      <div>Weather now:</div>
+      <div>Weather now</div>
       <div>├╴<span class="weather-icon">api time</span></span><span class="data_text">${time_now}</span></div>
       <div>├╴<span class="weather-icon">temperature</span></span><span class="data_text">${temp_now}</span></div>
       <div>├╴<span class="weather-icon">percieved temp</span></span><span class="data_text">${temp_felt_now}</span></div>
@@ -103,7 +103,7 @@ async function pullWeather(date_string, lat, lon) {
     `;
 
     document.getElementById("weather_today").innerHTML = `
-      <div>Weather today:</div>
+      <div>Weather today</div>
       <div>├╴<span class="weather-icon">max temp</span><span class="data_text">${max_temp_today}</span></div>
       <div>├╴<span class="weather-icon">min temp</span><span class="data_text">${min_temp_today}</span></div>
       <div>├╴<span class="weather-icon">sunset</span><span class="data_text">${sunset_today}</span></div>
@@ -111,7 +111,7 @@ async function pullWeather(date_string, lat, lon) {
     `;
 
     document.getElementById("weather_tomorrow").innerHTML = `
-      <div>Weather tomorrow:</div>
+      <div>Weather tomorrow</div>
       <div>├╴<span class="weather-icon">max temp</span><span class="data_text">${max_temp_tomorrow}</span></div>
       <div>╰╴<span class="weather-icon">uv-index max</span><span class="data_text">${max_uv_index_tomorrow}</span></div>
     `;
@@ -119,13 +119,79 @@ async function pullWeather(date_string, lat, lon) {
 
 
     document.getElementById("weather_next").innerHTML = `
-      <div>Weather future:</div>
+      <div>Weather future</div>
       <div>├╴<span class="weather-icon">next full moon</span><span class="data_text">${next_full_moon}</span></div>
       <div>╰╴<span class="weather-icon">next sun</span><span class="data_text">${next_time_DNI_over_120}</span></div>
     `;
 
-/*     document.getElementById("info").innerHTML ='(!) A DNI over 120 constitutes as "sunny"'; */
-    document.getElementById("buttons").innerHTML='<a href="/graphs.html" class="ascii_button">Graphs</a>'
+
+    function createTemperatureRows(date) {
+
+      const temperatures = result.hourly.time
+        .map((time, index) => ({
+          time,
+          temperature: result.hourly.apparent_temperature[index]
+        }))
+        .filter(({ time }) => time.startsWith(date));
+
+      const max = Math.max(...temperatures.map(({time, temperature}) => {
+        return temperature;
+      }))
+
+      const min = Math.min(...temperatures.map(({time, temperature}) => {
+        return temperature;
+      }))
+
+      return temperatures
+        .map(({ time, temperature }, index) => {
+
+          const branch = index === temperatures.length - 1 ? "╰╴" : "├╴";
+          
+          let symbol = ""
+
+          if (temperature === max){
+            symbol = "🔥"
+          } else if (temperature === min) {
+            symbol = "❄️"
+          } else {
+            symbol = ""
+          }
+
+          const hour = time.slice(11, 16);
+
+          const paddedTemperature = String(temperature).padEnd(5, " ")
+
+        
+
+
+          return `<div>${branch}<span class="weather-icon">${hour}</span><span class="data_text">${paddedTemperature} °C ${symbol}</span></div>`;
+        })
+        .join("");
+    }
+
+
+    const today = result.daily.time[0];
+    const tomorrow = result.daily.time[1];
+
+    document.getElementById("all_temps").innerHTML = `
+      <div>Temperatures today</div>
+      ${createTemperatureRows(today)}
+
+      <br>
+
+      <div>Temperatures tomorrow</div>
+      ${createTemperatureRows(tomorrow)}
+    `;
+
+
+
+    document.getElementById("buttons").innerHTML='<a href="/graphs.html" class="ascii_button">[ Graphs ]</a><button id="all_temps_btn" class="ascii_button">[ all_temps ]</button>'
+
+    const all_temps = document.getElementById("all_temps")
+    document.getElementById("all_temps_btn").addEventListener("click", () => {
+    all_temps.classList.toggle("hidden")
+
+  })
 
 
   } catch (error) {
@@ -215,6 +281,7 @@ async function main(){
   const date_string = get_date_string_now();
 
   pullWeather(date_string, latitude, longitude);
+
 
   
 

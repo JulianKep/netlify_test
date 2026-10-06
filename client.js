@@ -173,6 +173,7 @@ async function pullWeather(date_string, lat, lon) {
     const today = result.daily.time[0];
     const tomorrow = result.daily.time[1];
     const day_after_tmr = result.daily.time[2];
+    const in_three_days = result.daily.time[3];
 
     document.getElementById("all_temps").innerHTML = `
       <div>Temperatures today</div>
@@ -187,6 +188,11 @@ async function pullWeather(date_string, lat, lon) {
 
       <div>Temperatures day after tomorrow</div>
       ${createTemperatureRows(day_after_tmr)}
+
+      <br>
+
+      <div>Temperatures in three days/div>
+      ${createTemperatureRows(in_three_days)}
     `;
 
 

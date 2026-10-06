@@ -191,7 +191,7 @@ async function pullWeather(date_string, lat, lon) {
 
       <br>
 
-      <div>Temperatures in three days/div>
+      <div>Temperatures in three days </div>
       ${createTemperatureRows(in_three_days)}
     `;
 

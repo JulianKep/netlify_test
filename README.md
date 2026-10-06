@@ -4,4 +4,4 @@ This Project implements a very simple weather web app that pulls data from the O
 
 # Commands
 
-npm run dev
+npx serve
